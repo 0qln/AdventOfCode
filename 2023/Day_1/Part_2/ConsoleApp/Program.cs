@@ -1002,16 +1002,18 @@ fbdqzbmjnkmqcgeight5five
 jhctmxconelfkgmprnfourseven8twofkjvlvnjgd
 twonrpvnnmvkh2threejzcpz";
 
+var pattern = @"zero|one|two|three|four|five|six|seven|eight|nine|0|1|2|3|4|5|6|7|8|9";
+var regexForward = new Regex(pattern);
+var regexBackward = new Regex(Reverse(pattern));
 
-ulong result = 0;
-string pattern = @"zero|one|two|three|four|five|six|seven|eight|nine|0|1|2|3|4|5|6|7|8|9";
-
-foreach (var line in data.Split('\n'))
-{
-    var first = new Regex(pattern).Match(line);
-    var last = new Regex(Reverse(pattern)).Match(Reverse(line));
-    result += (ulong)int.Parse(GetNumeric(first.Value) + GetNumeric(Reverse(last.Value)));
-}
+var result = data
+    .Split('\n')
+    .Sum(line => 
+    {
+        var first = regexForward.Match(line);
+        var last = regexBackward.Match(Reverse(line));
+        return int.Parse(GetNumeric(first.Value) + GetNumeric(Reverse(last.Value)));
+    });
 
 Console.WriteLine(result);
 
