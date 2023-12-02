@@ -105,17 +105,24 @@ Game 99: 7 blue, 13 green; 3 green, 5 red, 12 blue; 2 blue, 14 green, 8 red; 4 r
 Game 100: 8 green, 7 blue, 1 red; 10 blue, 2 green, 5 red; 12 blue, 1 green, 1 red; 9 green, 9 blue, 2 red; 1 blue, 5 red, 3 green";
 
 
-int result = data.Split('\n').Sum(line =>
-{
-    var game = new Game(line.Split(';').Select(x => new Set(Red(x), Green(x), Blue(x))).ToList(), GameID(line));
 
-    return Power(MinimumSet(game));
-});
+Console.WriteLine(data
+    .Split('\n')
+    .Select(ParseGame)
+    .Select(MinimumSet)
+    .Select(Power)
+    .Sum());
 
-Console.WriteLine(result);
 
+Game ParseGame(string data) => new(data.Split(';').Select(ParseSet).ToList(),
+                                   GameID(data));
 
-Set MinimumSet(Game game) => new Set(game.Reveals.MaxBy(x => x.Red).Red, game.Reveals.MaxBy(x => x.Green).Green, game.Reveals.MaxBy(x => x.Blue).Blue);
+Set ParseSet(string data) => new(Red(data), Green(data), Blue(data));
+
+Set MinimumSet(Game game) => new(game.Reveals.MaxBy(x => x.Red).Red,
+                                 game.Reveals.MaxBy(x => x.Green).Green,
+                                 game.Reveals.MaxBy(x => x.Blue).Blue);
+
 int Power(Set set) => set.Red * set.Blue * set.Green;
 int GameID(string line) => int.Parse(new Regex(@"(?<=Game )[0-9]+").Match(line).Value);
 int Red(string line) => line.Contains("red") ? int.Parse(new Regex(@"[0-9]+(?= red)").Match(line).Value) : 0;
