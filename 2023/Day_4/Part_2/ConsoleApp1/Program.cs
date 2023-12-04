@@ -203,8 +203,9 @@ var reNums = new Regex(@"[0-9]+");
 var reWins = new Regex(@"(?<=: ).+(?=\|)");
 var reGets = new Regex(@"(?<=\|).+");
 
-var wins = reWins.Matches(data).Select(x => reNums.Matches(x.Value).Select(x => int.Parse(x.Value)).ToList()).ToList();
-var gets = reGets.Matches(data).Select(x => reNums.Matches(x.Value).Select(x => int.Parse(x.Value)).ToList()).ToList();
+var Value = (Match x) => x.Value;
+var wins = reWins.Matches(data).Select(x => reNums.Matches(x.Value).Select(Value).Select(int.Parse).ToList());
+var gets = reGets.Matches(data).Select(x => reNums.Matches(x.Value).Select(Value).Select(int.Parse).ToList());
 List<Card> cards = wins.Zip(gets).ToList();
 
 
