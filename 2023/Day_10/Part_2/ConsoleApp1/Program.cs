@@ -27,29 +27,40 @@ char[,] GetPlane(string[] data)
 
 ulong EnclosedTileCount(char[,] plane)
 {
-    // TODO:
-    /* By Expanding the plane we found out, where the animal can escape,
-     * but now the plane is too big and there are too many inner tiles.
-     * 
-     * We have to shrink down the plane again, momoazing, where the animal 
-     * can escape (??) 
-     * then count the inner tiles...
-     */
     var expanded = RepairConnections(Expand(plane));
     PrintPlane(expanded);
-    var loop = FindLoop(expanded);
-    PrintPlane(loop);
-    var outer = FindOuter(loop);
-    PrintPlane(outer);
-    var inner = FindInner(loop, outer);
-    PrintPlane(inner);
+    var inner = CountInner(FindLoop(expanded), expanded);
 
-    var l = FindLoop(plane);
-    var o = FindOuter(l);
-    var i = FindInner(l, o);
-    PrintPlane(i);
+    return inner;
+}
 
-    return Count(inner, c => c == 'i');
+ulong CountInner(char[,] loop, char[,] plane)
+{
+    char[,] inners = new char[loop.GetLength(0), loop.GetLength(1)];
+
+    ulong result = 0;
+    for (int y = 0; y < loop.GetLength(1) - 2; y += 2)
+    {
+        bool insideLoop = false;
+        for (int x = 0;  x < loop.GetLength(0) - 2; x += 2)
+        {
+            if (loop[x, y] == 'x')
+            {
+                insideLoop = !insideLoop;
+                continue;
+            }
+
+            if (insideLoop)
+            {
+                result++;
+                inners[x, y] = 'i';
+            }
+        }
+    }
+
+    PrintPlane(inners);
+
+    return result;
 }
 
 ulong Count(char[,] plane, Func<char, bool> func)
@@ -121,27 +132,27 @@ char[,] FindLoop(char[,] plane)
     char direction() => plane[currPos.X, currPos.Y];
 }
 
-char[,] FindInner(char[,] loop, char[,] outer)
-{
-    char[,] result = new char[loop.GetLength(0), loop.GetLength(1)];
-    for (int x = 0; x < result.GetLength(0); x++)
-    {
-        for (int y = 0; y < result.GetLength(1); y++)
-        {
-            if (loop[x, y] == '.' &&
-                outer[x, y] == '.')
-            {
-                result[x,y] = 'i';
-            }
-            else
-            {
-                result[x, y] = '.';
-            }
-        }
-    }
+//char[,] CountInner(char[,] loop, char[,] outer)
+//{
+//    char[,] result = new char[loop.GetLength(0), loop.GetLength(1)];
+//    for (int x = 0; x < result.GetLength(0); x++)
+//    {
+//        for (int y = 0; y < result.GetLength(1); y++)
+//        {
+//            if (loop[x, y] == '.' &&
+//                outer[x, y] == '.')
+//            {
+//                result[x,y] = 'i';
+//            }
+//            else
+//            {
+//                result[x, y] = '.';
+//            }
+//        }
+//    }
 
-    return result;
-}
+//    return result;
+//}
 
 char[,] FindOuter(char[,] loop)
 {
@@ -264,7 +275,8 @@ void PrintPlane(char[,] plane)
     {
         for (int y = 0; y < plane.GetLength(0); y++)
         {
-            Console.Write(plane.GetValue(y, x));
+            var c = plane[y, x];
+            Console.Write(c == (char)0 ? '.' : c);
         }
 
         Console.WriteLine();

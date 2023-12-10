@@ -1,5 +1,6 @@
 ﻿
 
+using System.Diagnostics;
 using Point = (int X, int Y);
 
 var data = File.ReadAllLines(@"../../../input.txt");
@@ -15,7 +16,9 @@ for (int i = 0; i < data[0].Length; i++)
     }
 }
 
-Console.WriteLine(LoopLen(plane, startingPos) / 2 + 1);
+var ll = LoopLen(plane, startingPos);
+Console.WriteLine(ll / 2 + 1);
+Debug.Assert(ll == 13900);
 
 
 ulong LoopLen(char[,] plane, Point startingPos)
