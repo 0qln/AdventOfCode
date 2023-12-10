@@ -1,17 +1,16 @@
 ﻿
 
-using System.Diagnostics;
 using Point = (int X, int Y);
 
 var data = File.ReadAllLines(@"../../../input.txt");
 
 char[,] plane = new char[data[0].Length, data.Length];
 Point startingPos = new Point();
-for (int i = 0; i < data.Length; i++)
+for (int i = 0; i < data[0].Length; i++)
 {
-    for (int j = 0; j < data[i].Length; j++)
+    for (int j = 0; j < data.Length; j++)
     {
-        plane[i, j] = data[^(j+1)][i];
+        plane[i, j] = data[^(j + 1)][i];
         if (plane[i, j] == 'S') startingPos = new Point(i, j);
     }
 }
