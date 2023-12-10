@@ -4,10 +4,6 @@ using Point = (int X, int Y);
 
 var data = File.ReadAllLines(@"../../../input.txt");
 
-//PrintPlane(plane);
-//PrintPlane(Expand(plane));
-//PrintPlane(Fix(Expand(plane)));
-
 Console.WriteLine(EnclosedTileCount(GetPlane(data)));
 
 char[,] GetPlane(string[] data)
@@ -28,48 +24,35 @@ char[,] GetPlane(string[] data)
 ulong EnclosedTileCount(char[,] plane)
 {
     var expanded = RepairConnections(Expand(plane));
-    PrintPlane(expanded);
-    var inner = CountInner(FindLoop(expanded), expanded);
+    var loop = FindLoop(expanded);
+    var inner = CountInner(loop, expanded, FindOuter(loop));
 
     return inner;
 }
 
-ulong CountInner(char[,] loop, char[,] plane)
+ulong CountInner(char[,] loop, char[,] plane, char[,] outers)
 {
-    char[,] inners = new char[loop.GetLength(0), loop.GetLength(1)];
-
     ulong result = 0;
     for (int y = 0; y < loop.GetLength(1) - 2; y += 2)
     {
-        bool insideLoop = false;
+        bool l = false;
         for (int x = 0;  x < loop.GetLength(0) - 2; x += 2)
         {
             if (loop[x, y] == 'x')
             {
-                insideLoop = !insideLoop;
+                if (l) { continue; }
+
+                l = !l;
                 continue;
             }
 
-            if (insideLoop)
+            if (l && outers[x, y] != 'o')
             {
                 result++;
-                inners[x, y] = 'i';
             }
         }
     }
 
-    PrintPlane(inners);
-
-    return result;
-}
-
-ulong Count(char[,] plane, Func<char, bool> func)
-{
-    var result = 0UL;
-    for (int x = 0; x < plane.GetLength(0); x++)
-        for (int y = 0; y < plane.GetLength(1); y++)
-            if (func(plane[x, y]))
-                result++;
     return result;
 }
 
@@ -132,28 +115,6 @@ char[,] FindLoop(char[,] plane)
     char direction() => plane[currPos.X, currPos.Y];
 }
 
-//char[,] CountInner(char[,] loop, char[,] outer)
-//{
-//    char[,] result = new char[loop.GetLength(0), loop.GetLength(1)];
-//    for (int x = 0; x < result.GetLength(0); x++)
-//    {
-//        for (int y = 0; y < result.GetLength(1); y++)
-//        {
-//            if (loop[x, y] == '.' &&
-//                outer[x, y] == '.')
-//            {
-//                result[x,y] = 'i';
-//            }
-//            else
-//            {
-//                result[x, y] = '.';
-//            }
-//        }
-//    }
-
-//    return result;
-//}
-
 char[,] FindOuter(char[,] loop)
 {
     char[,] result = new char[loop.GetLength(0), loop.GetLength(1)];
@@ -203,20 +164,34 @@ void MarkAdjacendExplode(char[,] writePlane, char[,] readPlane, Point pos, Func<
         return;
     }
 
-    if (condition(readPlane[pos.X, pos.Y]) && condition(writePlane[pos.X, pos.Y]))
-    {
-        writePlane[pos.X, pos.Y] = mark;
-    }
-    else
-    {
-        return;
-    }
+    var stack = new Stack<Point>();
+    stack.Push(pos);
 
-    MarkAdjacendExplode(writePlane, readPlane, (pos.X + 1, pos.Y), condition, mark);
-    MarkAdjacendExplode(writePlane, readPlane, (pos.X - 1, pos.Y), condition, mark);
-    MarkAdjacendExplode(writePlane, readPlane, (pos.X, pos.Y + 1), condition, mark);
-    MarkAdjacendExplode(writePlane, readPlane, (pos.X, pos.Y - 1), condition, mark);
+    while (stack.Count > 0)
+    {
+        var currentPos = stack.Pop();
+
+        if (currentPos.X < 0 || currentPos.Y < 0 || currentPos.X >= readPlane.GetLength(0) || currentPos.Y >= readPlane.GetLength(1))
+        {
+            continue;
+        }
+
+        if (condition(readPlane[currentPos.X, currentPos.Y]) && condition(writePlane[currentPos.X, currentPos.Y]))
+        {
+            writePlane[currentPos.X, currentPos.Y] = mark;
+        }
+        else
+        {
+            continue;
+        }
+
+        stack.Push(new Point(currentPos.X + 1, currentPos.Y));
+        stack.Push(new Point(currentPos.X - 1, currentPos.Y));
+        stack.Push(new Point(currentPos.X, currentPos.Y + 1));
+        stack.Push(new Point(currentPos.X, currentPos.Y - 1));
+    }
 }
+
 
 
 Point FirstStep(Point curr, char[,] plane)
