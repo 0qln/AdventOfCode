@@ -2,7 +2,7 @@
 using Point = (int X, int Y);
 
 var DATA = File.ReadAllLines(@"../../../input.txt");
-var galaxies = Galaxies(ExpandUniverse(GetUniverse(DATA)));
+var galaxies = Galaxies(ExpandUniverse(GetUniverse(DATA), rate: 10));
 Console.WriteLine(Pairs(galaxies).Sum(Distance));
 
 
@@ -64,22 +64,22 @@ bool[,] GetUniverse(string[] data)
 }
 
 
-bool[,] ExpandUniverse(bool[,] data)
+bool[,] ExpandUniverse(bool[,] data, int rate = 1)
 {
     HashSet<int> emptyRows = new(), emptyCols = new();
 
     for (int x = 0; x < data.GetLength(0); x++) if (IsEmptyCol(data, x)) emptyCols.Add(x);
     for (int y = 0; y < data.GetLength(1); y++) if (IsEmptyRow(data, y)) emptyRows.Add(y);
     
-    var ret = new bool[data.GetLength(0) + emptyCols.Count, data.GetLength(1) + emptyRows.Count];
+    var ret = new bool[data.GetLength(0) + emptyCols.Count * rate, data.GetLength(1) + emptyRows.Count * rate];
 
     for (int rx = 0, dx = 0; dx < data.GetLength(0); rx++, dx++)
     {
-        if (emptyCols.Contains(dx)) rx += 1;
+        if (emptyCols.Contains(dx)) rx += rate;
 
         for (int ry = 0, dy = 0; dy < data.GetLength(1); ry++, dy++)
         {
-            if (emptyRows.Contains(dy)) ry += 1;
+            if (emptyRows.Contains(dy)) ry += rate;
 
             ret[rx, ry] = data[dx, dy];
         }
