@@ -2,7 +2,7 @@
 using Point = (int X, int Y);
 
 var DATA = File.ReadAllLines(@"../../../input.txt");
-var galaxies = Galaxies(ExpandUniverse(GetUniverse(DATA), rate: 10));
+var galaxies = Galaxies(ExpandUniverse(GetUniverse(DATA)));
 Console.WriteLine(Pairs(galaxies).Sum(Distance));
 
 
