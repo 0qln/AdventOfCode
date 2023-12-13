@@ -2,32 +2,44 @@
 
 string[][] fields = File.ReadAllText(@"../../../input.txt").Split("\r\n\r\n").Select(x => x.Split("\r\n")).ToArray();
 
-Console.WriteLine(fields.Sum(GenerateNotes));
+Console.WriteLine(GenerateNotes(fields[0]));
+
+//Console.WriteLine(fields.Sum(GenerateNotes));
+
 
 int GenerateNotes(string[] field)
 {
+    var oldColIdx = FindPerfectReflectionCol(field);
+    var oldRowIdx = FindPerfectReflectionRow(field);
+
     var colIdx = -1;
     var rowIdx = -1;
 
-    int x = 0, y = 0;
-    while (colIdx == -1 && rowIdx == -1)
-    {
-        // change smudge 
-        ChangeSmudge(x, y, field);
-        x += 1;
-        if (x == field[0].Length)
-        {
-            y += 1;
-            x = 0;
-        }
-        if (y == field.Length)
-        {
-            throw new Exception("No replacement for the smudge found.");
-        }
+    var maxCol = field[0].Length-1;
+    var maxRow = field.Length-1;
 
-        // recalculate
+    int col = 0, row = 0;
+    while(((colIdx == -1 && rowIdx == -1) || // no perfect reflection found
+           (colIdx == oldColIdx && rowIdx == oldRowIdx)) && // not a different perfect reflection comp. to the old one
+           (col <= maxCol && row <= maxRow)) // bounds
+    {
+        // create new smudge
+        ToggleSmudge(col, row, field);
+
+        foreach (var l in field)        
+            Console.WriteLine(l);        
+        Console.WriteLine();
+
+        // update reflections
         colIdx = FindPerfectReflectionCol(field);
         rowIdx = FindPerfectReflectionRow(field);
+        
+        // revert smudge
+        ToggleSmudge(col, row, field);
+        
+        // update smudge position
+        col++;
+        if ((col %= maxCol) == 0) row++;
     }
 
     var result = colIdx == -1 ? rowIdx * 100 : colIdx;
@@ -35,7 +47,7 @@ int GenerateNotes(string[] field)
     return result;
 }
 
-void ChangeSmudge(int x, int y, string[] field)
+void ToggleSmudge(int x, int y, string[] field)
 {
     char newChar = field[y][x] == '.' ? '#' : '.';
     field[y] = Replace(field[y], newChar, x);
